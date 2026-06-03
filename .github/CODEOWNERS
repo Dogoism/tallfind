@@ -1,0 +1,16 @@
+# Store directory data changes what visitors see, so require owner review.
+/data/*.json @usmanbako
+
+# App behavior, links, analytics, affiliate handling, and CSP need owner review.
+/assets/*.js @usmanbako
+/index.html @usmanbako
+
+# Trust, legal, and public documentation pages need owner review.
+/README.md @usmanbako
+/about/** @usmanbako
+/how-we-review/** @usmanbako
+/privacy/** @usmanbako
+/terms/** @usmanbako
+
+# Domain/deployment metadata should not change without owner review.
+/CNAME @usmanbako
