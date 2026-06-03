@@ -396,6 +396,17 @@
     "url": "https://www.tallmoi.com"
   },
   {
+    "name": "Tallora Denim",
+    "domain": "talloradenim.com",
+    "tallSpecific": true,
+    "hasTops": false,
+    "hasBottoms": true,
+    "topSizes": "N/A",
+    "bottomSizes": "34\"–38\" inseams",
+    "notes": "Small denim-focused brand for tall women; limited public information, so verify sizing, stock, and return terms before ordering.",
+    "url": "https://talloradenim.com"
+  },
+  {
     "name": "Taylor Tall",
     "domain": "taylortall.com",
     "tallSpecific": true,
