@@ -1,10 +1,3 @@
-# Unrelated project files
-PetApplication.zip
-app.js
-style.css
-react-app.html
-!assets/app.js
-
 # Node / test tooling
 node_modules/
 coverage/

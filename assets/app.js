@@ -577,14 +577,11 @@ function render() {
     const tallOnly = list.filter(s => s.tallSpecific);
     const mainstream = list.filter(s => !s.tallSpecific);
 
-    let useFlat = listSort === 'az' || (listSort === 'inseam' && !isMen);
     let flatList = null;
     if (listSort === 'inseam' && isMen) {
         flatList = sortFlatInseamMen(list);
-        useFlat = true;
     } else if (listSort === 'az' || (listSort === 'inseam' && !isMen)) {
         flatList = nameSort(list);
-        useFlat = true;
     }
 
     let html = '';
@@ -640,7 +637,7 @@ function render() {
             + '</div>';
     };
 
-    if (useFlat && flatList) {
+    if (flatList) {
         flatList.forEach((s, i) => { html += renderCard(s, i); });
     } else {
         const t = nameSort(tallOnly);
