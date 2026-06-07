@@ -38,6 +38,11 @@ const AF = { favorites: false, tallSpecific: false, hasTops: false, hasBottoms: 
 let _historyReady = false;
 let _skipUrlSync = false;
 
+// Under a CommonJS test runner (Vitest) `module.exports` exists, so the
+// browser bootstrap below is skipped and the pure helpers are exported instead.
+// In the browser there is no `module`, so `_BROWSER` is true and nothing changes.
+const _BROWSER = typeof module === 'undefined' || !module.exports;
+
 function trackEvent(name, params, opts) {
     try {
         if (localStorage.getItem('tallfind_analytics_consent') !== 'accepted') return;
@@ -413,14 +418,14 @@ function closeModal()    { closeOverlay('modalOverlay'); }
 function openFeedback()  { openOverlay('feedbackOverlay'); }
 function closeFeedback() { closeOverlay('feedbackOverlay'); }
 
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
+if (_BROWSER) document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
         if (e.target === overlay && _activeOverlay) closeOverlay(_activeOverlay);
     });
 });
 
 // Keyboard: Escape, Tab trapping, arrow nav
-document.addEventListener('keydown', e => {
+if (_BROWSER) document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && _activeOverlay) {
         closeOverlay(_activeOverlay);
         return;
@@ -464,8 +469,8 @@ function bindFormSubmit(formId, successId, defaultLabel) {
         }
     });
 }
-bindFormSubmit('submitForm', 'formSuccess', 'Submit Store');
-bindFormSubmit('feedbackForm', 'feedbackSuccess', 'Send Feedback');
+if (_BROWSER) bindFormSubmit('submitForm', 'formSuccess', 'Submit Store');
+if (_BROWSER) bindFormSubmit('feedbackForm', 'feedbackSuccess', 'Send Feedback');
 
 // ── FILTERS ──────────────────────────────────────────────────────────────────
 function toggleFilter(key) {
@@ -513,7 +518,7 @@ function updateClear() {
 }
 
 let _searchTimer;
-document.getElementById('searchInput').addEventListener('input', () => {
+if (_BROWSER) document.getElementById('searchInput').addEventListener('input', () => {
     updateClear();
     const q = document.getElementById('searchInput').value.trim();
     if (tab === 'home' && q) {
@@ -728,4 +733,18 @@ async function initApp() {
     }
 }
 
-initApp();
+if (_BROWSER) {
+    initApp();
+} else if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        escapeHtml,
+        safeUrl,
+        _skip,
+        normalizeTab,
+        nameSort,
+        sortFlatInseamMen,
+        matchesSearch,
+        generateDesc,
+        readURLState,
+    };
+}

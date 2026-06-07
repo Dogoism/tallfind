@@ -5,5 +5,13 @@ style.css
 react-app.html
 !assets/app.js
 
+# Node / test tooling
+node_modules/
+coverage/
+
+# Python
+__pycache__/
+.pytest_cache/
+
 # Claude Code config
 .claude/
