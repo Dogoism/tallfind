@@ -223,70 +223,10 @@
     </div>
 </div>
 
-<!-- CONSENT BANNER -->
-<div id="consentBanner" class="consent-banner" role="dialog" aria-live="polite" aria-label="Analytics consent">
-    <div class="consent-title">Privacy settings</div>
-    <div class="consent-text">
-        We use analytics to understand site usage and improve Tallfind. You can accept or reject analytics tracking.
-    </div>
-    <div class="consent-actions">
-        <button id="consentReject" class="pill pill-sm pill-ghost" type="button">Reject</button>
-        <button id="consentAccept" class="pill pill-sm" type="button">Accept</button>
-    </div>
-</div>
-
-<script>
-    (function () {
-        var KEY = 'tallfind_analytics_consent';
-        var GA_ID = 'G-98C0R7CN01';
-        var banner = document.getElementById('consentBanner');
-        var configured = false;
-
-        function hideBanner() {
-            if (banner) banner.classList.remove('open');
-        }
-
-        function configureGA() {
-            if (configured) return;
-            configured = true;
-            gtag('config', GA_ID);
-        }
-
-        function setConsent(choice) {
-            localStorage.setItem(KEY, choice);
-            if (choice === 'accepted') {
-                gtag('consent', 'update', {
-                    analytics_storage: 'granted'
-                });
-                configureGA();
-            } else {
-                gtag('consent', 'update', {
-                    ad_storage: 'denied',
-                    analytics_storage: 'denied',
-                    ad_user_data: 'denied',
-                    ad_personalization: 'denied'
-                });
-            }
-            hideBanner();
-        }
-
-        var saved = localStorage.getItem(KEY);
-        if (saved === 'accepted') {
-            setConsent('accepted');
-        } else if (saved === 'rejected') {
-            setConsent('rejected');
-        } else if (banner) {
-            banner.classList.add('open');
-        }
-
-        var acceptBtn = document.getElementById('consentAccept');
-        var rejectBtn = document.getElementById('consentReject');
-        if (acceptBtn) acceptBtn.addEventListener('click', function () { setConsent('accepted'); });
-        if (rejectBtn) rejectBtn.addEventListener('click', function () { setConsent('rejected'); });
-    })();
-</script>
+<!-- Consent banner is rendered by assets/analytics.js -->
 
 <script src="assets/affiliate.js"></script>
+<script src="assets/analytics.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

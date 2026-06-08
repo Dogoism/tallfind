@@ -43,15 +43,10 @@ let _skipUrlSync = false;
 // In the browser there is no `module`, so `_BROWSER` is true and nothing changes.
 const _BROWSER = typeof module === 'undefined' || !module.exports;
 
-function trackEvent(name, params, opts) {
-    try {
-        if (localStorage.getItem('tallfind_analytics_consent') !== 'accepted') return;
-        if (typeof gtag !== 'function') return;
-        var p = Object.assign({}, params || {});
-        if (opts && opts.beacon) p.transport_type = 'beacon';
-        gtag('event', name, p);
-    } catch (e) { /* ignore */ }
-}
+// trackEvent + consent + outbound tracking live in assets/analytics.js, loaded
+// before this file. We call the shared window.trackEvent here.
+const trackEvent = (name, params, opts) =>
+    (window.trackEvent ? window.trackEvent(name, params, opts) : undefined);
 
 function readURLState() {
     const p = new URLSearchParams(location.search);
@@ -229,6 +224,8 @@ function matchesSearch(s, q, isMen) {
 function switchTab(t, opts) {
     opts = opts || {};
     tab = normalizeTab(t);
+    // Keep source_page (read by analytics.js) in sync with the active tab.
+    if (document.body) document.body.dataset.page = tab;
     ['home', 'men', 'women'].forEach(id => {
         const el = document.getElementById('tab-' + id);
         el.classList.toggle('on', tab === id);
@@ -696,33 +693,13 @@ async function initApp() {
                 replaceFilterURL();
             });
         }
+        // Favorite toggles. Outbound-link tracking is handled by analytics.js.
         document.addEventListener('click', function (e) {
             var favBtn = e.target.closest ? e.target.closest('.fav-btn[data-fav-name]') : null;
             if (favBtn) {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleFav(favBtn.dataset.favName, e);
-                return;
-            }
-            const a = e.target.closest('a[href]');
-            if (!a) return;
-            let host;
-            try { host = new URL(a.href, location.href).host; } catch (err) { return; }
-            if (!host || host === location.host) return;
-            const slug = a.dataset.storeSlug || null;
-            const name = a.dataset.storeName
-                || (a.dataset.store ? decodeURIComponent(a.dataset.store) : null);
-            const network = a.dataset.affiliateNetwork || 'none';
-            const source = (document.body && document.body.dataset.page) || tab || 'home';
-            trackEvent('outbound_click', {
-                store_slug: slug,
-                store_name: name,
-                source_page: source,
-                destination_domain: host,
-                affiliate_network: network
-            }, { beacon: true });
-            if (name) {
-                trackEvent('visit_store', { store_name: name, tab: source }, { beacon: true });
             }
         });
     } catch (error) {
