@@ -186,14 +186,43 @@ def validate_affiliates(config):
     return errors
 
 
+def _slug_for(name):
+    """Derive the affiliate slug from a store name (mirrors affiliate.js slugFor)."""
+    import re
+
+    s = name.lower()
+    s = s.replace("&", " and ")
+    s = re.sub(r"[^a-z0-9]+", "-", s)
+    s = s.strip("-")
+    return s
+
+
+def cross_check_affiliate_slugs(affiliate_config, all_stores):
+    """Check that every key in affiliates.json matches a slug derivable from a store."""
+    errors = []
+    known_slugs = {_slug_for(s["name"]) for s in all_stores if s.get("name")}
+    for slug in affiliate_config:
+        if slug not in known_slugs:
+            errors.append(
+                f"affiliates[{slug}] does not match any store slug in men.json or women.json"
+            )
+    return errors
+
+
 def validate_all():
     """Load every data file and return the aggregated list of error strings."""
     errors = []
+    all_stores = []
     for file_label, config in STORE_FILES.items():
         stores = load_json(config["path"])
         errors.extend(validate_stores(file_label, stores, config["required"]))
+        if isinstance(stores, list):
+            all_stores.extend(stores)
     errors.extend(validate_featured(load_json(FEATURED_FILE)))
-    errors.extend(validate_affiliates(load_json(AFFILIATES_FILE)))
+    affiliate_config = load_json(AFFILIATES_FILE)
+    errors.extend(validate_affiliates(affiliate_config))
+    if isinstance(affiliate_config, dict):
+        errors.extend(cross_check_affiliate_slugs(affiliate_config, all_stores))
     return errors
 
 

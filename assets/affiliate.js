@@ -15,7 +15,7 @@
     'use strict';
 
     var config = {};
-    var ready = fetch('data/affiliates.json', { cache: 'no-cache' })
+    var ready = fetch('data/affiliates.json')
         .then(function (r) { return r.ok ? r.json() : {}; })
         .catch(function () { return {}; })
         .then(function (c) { config = c || {}; return config; });

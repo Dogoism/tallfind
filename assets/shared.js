@@ -13,17 +13,7 @@
     var CONSENT_KEY = 'tallfind_analytics_consent';
     var GA_ID = 'G-98C0R7CN01';
 
-    // ── Event helper (matches app.js) ────────────────────────────────────────
-    function trackEvent(name, params, opts) {
-        try {
-            if (localStorage.getItem(CONSENT_KEY) !== 'accepted') return;
-            if (typeof gtag !== 'function') return;
-            var p = Object.assign({}, params || {});
-            if (opts && opts.beacon) p.transport_type = 'beacon';
-            gtag('event', name, p);
-        } catch (e) { /* ignore */ }
-    }
-    window.trackEvent = window.trackEvent || trackEvent;
+    var trackEvent = window.trackEvent || function () {};
 
     // ── Header / Footer markup ───────────────────────────────────────────────
     var headerHTML =
@@ -31,14 +21,14 @@
         + '<a class="logo" href="/" aria-label="Tallfind home">Tall<em>find</em></a>'
         + '<nav class="header-nav" aria-label="Directory sections">'
         +   '<a class="pill pill-sm" href="/">Home</a>'
-        +   '<a class="pill pill-sm" href="/?tab=men">Men’s</a>'
-        +   '<a class="pill pill-sm" href="/?tab=women">Women’s</a>'
+        +   '<a class="pill pill-sm" href="/?tab=men">Men\'s</a>'
+        +   '<a class="pill pill-sm" href="/?tab=women">Women\'s</a>'
         +   '<a class="pill pill-sm" href="/resources/">Resources</a>'
         + '</nav>'
         + '<div class="search-wrap">'
         +   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>'
         +   '<label for="searchShortcut" class="sr-only">Search stores</label>'
-        +   '<input type="text" id="searchShortcut" placeholder="Search by store, size, inseam..." readonly onclick="location.href=\'/?tab=men\'">'
+        +   '<input type="text" id="searchShortcut" placeholder="Search by store, size, inseam..." readonly>'
         + '</div>'
         + '<div class="header-actions">'
         +   '<a class="pill pill-ghost pill-sm" href="/?modal=submit">+<span class="btn-label"> Submit</span></a>'
@@ -192,6 +182,13 @@
         renderConsentBanner();
         installOutboundTracker();
         applyAffiliates();
+
+        var searchShortcut = document.getElementById('searchShortcut');
+        if (searchShortcut) {
+            searchShortcut.addEventListener('click', function () {
+                location.href = '/?tab=men';
+            });
+        }
     }
 
     if (document.readyState === 'loading') {
