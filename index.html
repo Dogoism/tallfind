@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){if(self!==top){try{top.location.href=self.location.href;}catch(e){document.documentElement.style.display='none';}}})();</script>
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; img-src 'self' data: https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://formspree.io; form-action https://formspree.io; base-uri 'self'; object-src 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; img-src 'self' data: https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://formspree.io; form-action https://formspree.io; base-uri 'self'; object-src 'none';">
     <meta name="description" id="metaDesc" content="A hand-reviewed directory of tall-friendly clothing stores for men and women. Every store verified, every size range confirmed.">
     <meta name="theme-color" content="#F7F8FA">
     <link rel="canonical" href="https://tallfind.com/">
@@ -36,31 +35,23 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link id="fontStylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" media="print">
     <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
+    <script src="assets/bootstrap.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-98C0R7CN01"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('consent', 'default', {
-            ad_storage: 'denied',
-            analytics_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied'
-        });
-    </script>
     <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
 <header>
-    <button class="logo" onclick="switchTab('home');window.scrollTo(0,0)" aria-label="Tallfind home">Tall<em>find</em></button>
+    <button class="logo" data-action="home" aria-label="Tallfind home">Tall<em>find</em></button>
     <nav class="header-nav" aria-label="Directory sections">
-        <button class="pill pill-sm on" id="tab-home"  role="tab" aria-selected="true"  onclick="switchTab('home')">Home</button>
-        <button class="pill pill-sm"    id="tab-men"   role="tab" aria-selected="false" onclick="switchTab('men')">Men's</button>
-        <button class="pill pill-sm"    id="tab-women" role="tab" aria-selected="false" onclick="switchTab('women')">Women's</button>
+        <div role="tablist">
+            <button class="pill pill-sm on" id="tab-home"  role="tab" aria-selected="true"  data-action="tab" data-tab="home">Home</button>
+            <button class="pill pill-sm"    id="tab-men"   role="tab" aria-selected="false" data-action="tab" data-tab="men">Men's</button>
+            <button class="pill pill-sm"    id="tab-women" role="tab" aria-selected="false" data-action="tab" data-tab="women">Women's</button>
+        </div>
         <a class="pill pill-sm" href="/resources/">Resources</a>
     </nav>
     <div class="search-wrap">
@@ -69,8 +60,8 @@
         <input type="text" id="searchInput" placeholder="Search by store, size, inseam...">
     </div>
     <div class="header-actions">
-        <button class="pill pill-ghost pill-sm" onclick="openModal()">+<span class="btn-label"> Submit</span></button>
-        <button class="pill pill-ghost pill-sm" onclick="openFeedback()">&#x2709;<span class="btn-label"> Feedback</span></button>
+        <button class="pill pill-ghost pill-sm" data-action="open-modal">+<span class="btn-label"> Submit</span></button>
+        <button class="pill pill-ghost pill-sm" data-action="open-feedback">&#x2709;<span class="btn-label"> Feedback</span></button>
     </div>
 </header>
 
@@ -96,11 +87,11 @@
 
         <div class="toolbar">
             <div class="filter-pills">
-                <button class="pill pill-sm on"  id="f-all"          onclick="toggleFilter('all')">All</button>
-                <button class="pill pill-sm"     id="f-tallSpecific"  onclick="toggleFilter('tallSpecific')">Tall-Only ★</button>
-                <button class="pill pill-sm"     id="f-hasTops"       onclick="toggleFilter('hasTops')">Tops</button>
-                <button class="pill pill-sm"     id="f-hasBottoms"    onclick="toggleFilter('hasBottoms')">Bottoms</button>
-                <button class="pill pill-sm"     id="f-favorites"     onclick="toggleFilter('favorites')">&#x2665; Saved</button>
+                <button class="pill pill-sm on"  id="f-all"          data-action="filter" data-filter="all">All</button>
+                <button class="pill pill-sm"     id="f-tallSpecific"  data-action="filter" data-filter="tallSpecific">Tall-Only ★</button>
+                <button class="pill pill-sm"     id="f-hasTops"       data-action="filter" data-filter="hasTops">Tops</button>
+                <button class="pill pill-sm"     id="f-hasBottoms"    data-action="filter" data-filter="hasBottoms">Bottoms</button>
+                <button class="pill pill-sm"     id="f-favorites"     data-action="filter" data-filter="favorites">&#x2665; Saved</button>
             </div>
             <div class="toolbar-right">
                 <label class="sr-only" for="sortSelect">Sort stores</label>
@@ -110,22 +101,22 @@
                     <option value="inseam">Longest inseam</option>
                 </select>
                 <span class="store-count" id="storeCount"></span>
-                <button class="clear-btn" id="clearBtn" style="display:none" onclick="clearFilters()">Clear all</button>
+                <button class="clear-btn" id="clearBtn" style="display:none" data-action="clear">Clear all</button>
             </div>
         </div>
 
         <div class="inseam-row" id="inseamRow">
             <span class="inseam-label">Min. inseam</span>
-            <button class="pill pill-sm on" data-ins="0"  onclick="setInseam(0)">Any</button>
-            <button class="pill pill-sm"    data-ins="34" onclick="setInseam(34)">34"+</button>
-            <button class="pill pill-sm"    data-ins="36" onclick="setInseam(36)">36"+</button>
-            <button class="pill pill-sm"    data-ins="38" onclick="setInseam(38)">38"+</button>
-            <button class="pill pill-sm"    data-ins="40" onclick="setInseam(40)">40"+</button>
-            <button class="pill pill-sm"    data-ins="42" onclick="setInseam(42)">42"+</button>
+            <button class="pill pill-sm on" data-ins="0"  data-action="inseam">Any</button>
+            <button class="pill pill-sm"    data-ins="34" data-action="inseam">34"+</button>
+            <button class="pill pill-sm"    data-ins="36" data-action="inseam">36"+</button>
+            <button class="pill pill-sm"    data-ins="38" data-action="inseam">38"+</button>
+            <button class="pill pill-sm"    data-ins="40" data-action="inseam">40"+</button>
+            <button class="pill pill-sm"    data-ins="42" data-action="inseam">42"+</button>
         </div>
 
         <div class="grid" id="storeGrid"></div>
-        <div class="no-results" id="noResults" style="display:none">No stores match your current filters. Try broadening your search or <button class="text-link" onclick="clearFilters()">clearing all filters</button>.</div>
+        <div class="no-results" id="noResults" style="display:none">No stores match your current filters. Try broadening your search or <button class="text-link" data-action="clear">clearing all filters</button>.</div>
     </main>
 </div>
 
@@ -134,7 +125,7 @@
     <div class="modal">
         <div class="modal-header">
             <h2 class="modal-title" id="modalTitle">Submit a Store</h2>
-            <button class="modal-close" aria-label="Close" onclick="closeModal()">&#xd7;</button>
+            <button class="modal-close" aria-label="Close" data-action="close-modal">&#xd7;</button>
         </div>
         <p class="modal-sub">Know a store with genuine tall sizing that we're missing? Submit it below and our team will review it for inclusion.</p>
         <div id="formSuccess" class="form-success">
@@ -190,7 +181,7 @@
     <div class="modal">
         <div class="modal-header">
             <h2 class="modal-title" id="feedbackTitle">Site Feedback</h2>
-            <button class="modal-close" aria-label="Close" onclick="closeFeedback()">&#xd7;</button>
+            <button class="modal-close" aria-label="Close" data-action="close-feedback">&#xd7;</button>
         </div>
         <p class="modal-sub">Found an error, missing a store, or have an idea to improve Tallfind? We'd love to hear it.</p>
         <div id="feedbackSuccess" class="form-success">
@@ -223,70 +214,8 @@
     </div>
 </div>
 
-<!-- CONSENT BANNER -->
-<div id="consentBanner" class="consent-banner" role="dialog" aria-live="polite" aria-label="Analytics consent">
-    <div class="consent-title">Privacy settings</div>
-    <div class="consent-text">
-        We use analytics to understand site usage and improve Tallfind. You can accept or reject analytics tracking.
-    </div>
-    <div class="consent-actions">
-        <button id="consentReject" class="pill pill-sm pill-ghost" type="button">Reject</button>
-        <button id="consentAccept" class="pill pill-sm" type="button">Accept</button>
-    </div>
-</div>
-
-<script>
-    (function () {
-        var KEY = 'tallfind_analytics_consent';
-        var GA_ID = 'G-98C0R7CN01';
-        var banner = document.getElementById('consentBanner');
-        var configured = false;
-
-        function hideBanner() {
-            if (banner) banner.classList.remove('open');
-        }
-
-        function configureGA() {
-            if (configured) return;
-            configured = true;
-            gtag('config', GA_ID);
-        }
-
-        function setConsent(choice) {
-            localStorage.setItem(KEY, choice);
-            if (choice === 'accepted') {
-                gtag('consent', 'update', {
-                    analytics_storage: 'granted'
-                });
-                configureGA();
-            } else {
-                gtag('consent', 'update', {
-                    ad_storage: 'denied',
-                    analytics_storage: 'denied',
-                    ad_user_data: 'denied',
-                    ad_personalization: 'denied'
-                });
-            }
-            hideBanner();
-        }
-
-        var saved = localStorage.getItem(KEY);
-        if (saved === 'accepted') {
-            setConsent('accepted');
-        } else if (saved === 'rejected') {
-            setConsent('rejected');
-        } else if (banner) {
-            banner.classList.add('open');
-        }
-
-        var acceptBtn = document.getElementById('consentAccept');
-        var rejectBtn = document.getElementById('consentReject');
-        if (acceptBtn) acceptBtn.addEventListener('click', function () { setConsent('accepted'); });
-        if (rejectBtn) rejectBtn.addEventListener('click', function () { setConsent('rejected'); });
-    })();
-</script>
-
 <script src="assets/affiliate.js"></script>
+<script src="assets/shared.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

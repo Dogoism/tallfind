@@ -189,6 +189,7 @@
             color: var(--border-strong); letter-spacing: -0.02em;
             transition: color 0.3s; flex-shrink: 0;
         }
+        a.hp-brand { text-decoration: none; }
         .hp-brand:hover { color: var(--bronze); }
         @keyframes hp-scroll {
             0% { transform: translateX(0); }

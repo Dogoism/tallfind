@@ -38,20 +38,12 @@ const AF = { favorites: false, tallSpecific: false, hasTops: false, hasBottoms: 
 let _historyReady = false;
 let _skipUrlSync = false;
 
-// Under a CommonJS test runner (Vitest) `module.exports` exists, so the
-// browser bootstrap below is skipped and the pure helpers are exported instead.
-// In the browser there is no `module`, so `_BROWSER` is true and nothing changes.
 const _BROWSER = typeof module === 'undefined' || !module.exports;
 
-function trackEvent(name, params, opts) {
-    try {
-        if (localStorage.getItem('tallfind_analytics_consent') !== 'accepted') return;
-        if (typeof gtag !== 'function') return;
-        var p = Object.assign({}, params || {});
-        if (opts && opts.beacon) p.transport_type = 'beacon';
-        gtag('event', name, p);
-    } catch (e) { /* ignore */ }
-}
+// Keep in sync with data-ins buttons in index.html
+const INSEAM_TIERS = [0, 34, 36, 38, 40, 42];
+
+var trackEvent = (typeof window !== 'undefined' && window.trackEvent) || function () {};
 
 function readURLState() {
     const p = new URLSearchParams(location.search);
@@ -64,7 +56,7 @@ function readURLState() {
         tab: normalizeTab(tabRaw),
         q: p.get('q') || '',
         sort,
-        ins: [0, 34, 36, 38, 40, 42].includes(ins) ? ins : 0,
+        ins: INSEAM_TIERS.includes(ins) ? ins : 0,
         ft,
         modal: p.get('modal')
     };
@@ -146,8 +138,7 @@ function getFavs() {
     try { return JSON.parse(localStorage.getItem('tallfind_favs') || '[]'); } catch { return []; }
 }
 function setFavs(arr) { localStorage.setItem('tallfind_favs', JSON.stringify(arr)); }
-function toggleFav(name, e) {
-    e.preventDefault(); e.stopPropagation();
+function toggleFav(name) {
     const favs = getFavs();
     const idx = favs.indexOf(name);
     if (idx > -1) favs.splice(idx, 1); else favs.push(name);
@@ -220,7 +211,6 @@ function matchesSearch(s, q, isMen) {
         fields.push(s.bottomSizes || '');
     }
     const text = fields.join(' ').toLowerCase();
-    // Support multi-word queries: all terms must match
     const terms = q.split(/\s+/).filter(Boolean);
     return terms.every(term => text.includes(term));
 }
@@ -252,7 +242,6 @@ function switchTab(t, opts) {
     document.getElementById('inseamRow').style.display = tab === 'men' ? '' : 'none';
     syncSortSelectOptions();
 
-    // Update directory hero
     document.getElementById('dirTitle').textContent = tab === 'men' ? "Men's Tall" : "Women's Tall";
     document.getElementById('dirMeta').textContent = tab === 'men'
         ? menStores.length + ' hand-checked stores with genuine tall sizing for men 6\'2" and above. Filter by inseam, store type, and more.'
@@ -286,16 +275,29 @@ function renderHomepage() {
     const total = menStores.length + womenStores.length;
     const maxIns = menStores.reduce(function(m, s) { return s.inseam && s.inseam > m ? s.inseam : m; }, 0);
 
-    // Brand names for marquee
-    var marqueeNames = [], seen = {};
+    var af = (window.Tallfind && window.Tallfind.affiliates) || null;
+
+    var marqueeStores = [], seen = {};
     menStores.concat(womenStores).forEach(function(s) {
-        if (!seen[s.name] && s.tallSpecific) { marqueeNames.push(s.name); seen[s.name] = true; }
+        if (!seen[s.name] && s.tallSpecific) { marqueeStores.push(s); seen[s.name] = true; }
     });
     menStores.concat(womenStores).forEach(function(s) {
-        if (!seen[s.name]) { marqueeNames.push(s.name); seen[s.name] = true; }
+        if (!seen[s.name]) { marqueeStores.push(s); seen[s.name] = true; }
     });
-    marqueeNames = marqueeNames.slice(0, 16);
-    var marqueeHTML = marqueeNames.map(function(n) { return '<span class="hp-brand">' + escapeHtml(n) + '</span>'; }).join('');
+    marqueeStores = marqueeStores.slice(0, 16);
+    var marqueeHTML = marqueeStores.map(function(s) {
+        var url = af ? af.affiliateUrl(s) : s.url;
+        var href = safeUrl(url);
+        var safeName = escapeHtml(s.name);
+        if (href) {
+            return '<a class="hp-brand" href="' + href + '" target="_blank" rel="noopener noreferrer sponsored"'
+                + ' data-store-name="' + safeName + '"'
+                + ' data-store-slug="' + escapeHtml(af ? af.slugFor(s) : '') + '"'
+                + ' data-affiliate-network="' + escapeHtml(af ? af.networkFor(s) : 'none') + '"'
+                + '>' + safeName + '</a>';
+        }
+        return '<span class="hp-brand">' + safeName + '</span>';
+    }).join('');
 
     var _months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     var _now = new Date();
@@ -309,14 +311,14 @@ function renderHomepage() {
     +     '<source media="(max-width: 640px)" type="image/webp" srcset="assets/hero-mobile.webp">'
     +     '<source media="(max-width: 640px)" type="image/jpeg" srcset="assets/hero-mobile.jpg">'
     +     '<source type="image/webp" srcset="assets/hero.webp">'
-    +     '<img class="hp-hero-img" src="assets/hero.jpg" alt="Three tall figures in curated fits \u2014 denim and tee, black vest and trousers, cream sweater and chocolate pants" loading="eager" fetchpriority="high">'
+    +     '<img class="hp-hero-img" src="assets/hero.jpg" alt="Three tall figures in curated fits — denim and tee, black vest and trousers, cream sweater and chocolate pants" loading="eager" fetchpriority="high">'
     +   '</picture>'
     +   '<div class="hp-hero-overlay"></div>'
     +   '<div class="hp-hero-content">'
     +     '<div class="hp-pill">Curated Tall Clothing Directory</div>'
     +     '<h1>Find brands that actually fit.</h1>'
     +     '<p>A hand-reviewed directory of ' + total + ' tall-friendly stores for men and women. Every store verified, every size range confirmed.</p>'
-    +     '<button class="hp-cta" onclick="switchTab(\'men\')">Browse the Directory ' + arrowSvg + '</button>'
+    +     '<button class="hp-cta" data-action="tab" data-tab="men">Browse the Directory ' + arrowSvg + '</button>'
     +   '</div>'
     +   '<div class="hp-hero-meta"><span>' + total + ' Stores Reviewed</span><span>' + updatedStr + '</span></div>'
     + '</div>'
@@ -325,16 +327,16 @@ function renderHomepage() {
     // ── BROWSE CARDS ──
     + '<div class="hp-section-label">Browse by Category</div>'
     + '<section class="hp-browse-grid">'
-    +   '<div class="hp-browse-card hp-browse-card-sage" role="button" tabindex="0" onclick="switchTab(\'men\')" onkeydown="if(event.key===\'Enter\')this.click()">'
+    +   '<div class="hp-browse-card hp-browse-card-sage" role="button" tabindex="0" data-action="tab" data-tab="men">'
     +     '<div>'
-    +       '<h2>Men\u2019s Tall</h2>'
+    +       '<h2>Men’s Tall</h2>'
     +       '<p>' + menStores.length + ' vetted stores with inseams up to ' + maxIns + '"</p>'
     +     '</div>'
     +     '<span class="hp-browse-cta">Browse directory ' + arrowSvg + '</span>'
     +   '</div>'
-    +   '<div class="hp-browse-card hp-browse-card-sand" role="button" tabindex="0" onclick="switchTab(\'women\')" onkeydown="if(event.key===\'Enter\')this.click()">'
+    +   '<div class="hp-browse-card hp-browse-card-sand" role="button" tabindex="0" data-action="tab" data-tab="women">'
     +     '<div>'
-    +       '<h2>Women\u2019s Tall</h2>'
+    +       '<h2>Women’s Tall</h2>'
     +       '<p>' + womenStores.length + ' vetted stores with extended length options</p>'
     +     '</div>'
     +     '<span class="hp-browse-cta">Browse directory ' + arrowSvg + '</span>'
@@ -357,32 +359,32 @@ function renderHomepage() {
     +       '<div class="hp-footer-col">'
     +         '<h5>Directory</h5>'
     +         '<ul>'
-    +           '<li onclick="switchTab(\'men\')">Men\u2019s Tall</li>'
-    +           '<li onclick="switchTab(\'women\')">Women\u2019s Tall</li>'
-    +           '<li onclick="switchTab(\'men\',{filter:\'tallSpecific\'})">Tall-Only Brands</li>'
-    +           '<li onclick="switchTab(\'men\',{inseam:38})">38\u201d+ Inseam</li>'
+    +           '<li><a href="/?tab=men" data-action="tab" data-tab="men">Men’s Tall</a></li>'
+    +           '<li><a href="/?tab=women" data-action="tab" data-tab="women">Women’s Tall</a></li>'
+    +           '<li><a href="/?tab=men&ft=tallSpecific" data-action="tab" data-tab="men" data-filter="tallSpecific">Tall-Only Brands</a></li>'
+    +           '<li><a href="/?tab=men&ins=38" data-action="tab" data-tab="men" data-inseam="38">38”+ Inseam</a></li>'
     +         '</ul>'
     +       '</div>'
     +       '<div class="hp-footer-col">'
     +         '<h5>Trust</h5>'
     +         '<ul>'
-    +           '<li><a href="/about/" style="color:inherit;text-decoration:none">About</a></li>'
-    +           '<li><a href="/how-we-review/" style="color:inherit;text-decoration:none">How We Review</a></li>'
+    +           '<li><a href="/about/">About</a></li>'
+    +           '<li><a href="/how-we-review/">How We Review</a></li>'
     +           '<li><a href="/resources/">Tall Resources</a></li>'
-    +           '<li><a href="/privacy/" style="color:inherit;text-decoration:none">Privacy</a></li>'
-    +           '<li><a href="/terms/" style="color:inherit;text-decoration:none">Terms</a></li>'
+    +           '<li><a href="/privacy/">Privacy</a></li>'
+    +           '<li><a href="/terms/">Terms</a></li>'
     +         '</ul>'
     +       '</div>'
     +       '<div class="hp-footer-col">'
     +         '<h5>Resources</h5>'
     +         '<ul>'
-    +           '<li onclick="openModal()">Submit a Store</li>'
-    +           '<li onclick="openFeedback()">Send Feedback</li>'
+    +           '<li><a href="/?modal=submit" data-action="open-modal">Submit a Store</a></li>'
+    +           '<li><a href="/?modal=feedback" data-action="open-feedback">Send Feedback</a></li>'
     +         '</ul>'
     +       '</div>'
     +     '</div>'
     +     '<div class="hp-footer-bottom">'
-    +       '<span>\u00a9 ' + _now.getFullYear() + ' Tallfind \u00b7 Some outbound links may be affiliate links. <a href="/how-we-review/#disclosure" style="color:rgba(255,253,246,0.6);text-decoration:underline">How this works</a>.</span>'
+    +       '<span>© ' + _now.getFullYear() + ' Tallfind · Some outbound links may be affiliate links. <a href="/how-we-review/#disclosure" style="color:rgba(255,253,246,0.6);text-decoration:underline">How this works</a>.</span>'
     +       '<span>Data sourced from community research by <a href="https://www.reddit.com/u/wildthingking" target="_blank" rel="noopener" style="color:rgba(255,253,246,0.5);text-decoration:underline">u/wildthingking</a></span>'
     +     '</div>'
     +   '</div>'
@@ -424,7 +426,7 @@ if (_BROWSER) document.querySelectorAll('.modal-overlay').forEach(overlay => {
     });
 });
 
-// Keyboard: Escape, Tab trapping, arrow nav
+// Keyboard: Escape, Tab trapping, arrow nav, Enter on role=button
 if (_BROWSER) document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && _activeOverlay) {
         closeOverlay(_activeOverlay);
@@ -445,6 +447,10 @@ if (_BROWSER) document.addEventListener('keydown', e => {
         switchTab(tabs[next]);
         document.getElementById('tab-' + tabs[next]).focus();
         e.preventDefault();
+    }
+    if (e.key === 'Enter') {
+        var actionEl = e.target.closest ? e.target.closest('[data-action][role="button"]') : null;
+        if (actionEl) actionEl.click();
     }
 });
 
@@ -471,6 +477,62 @@ function bindFormSubmit(formId, successId, defaultLabel) {
 }
 if (_BROWSER) bindFormSubmit('submitForm', 'formSuccess', 'Submit Store');
 if (_BROWSER) bindFormSubmit('feedbackForm', 'feedbackSuccess', 'Send Feedback');
+
+// ── EVENT DELEGATION ─────────────────────────────────────────────────────────
+if (_BROWSER) document.addEventListener('click', function (e) {
+    var favBtn = e.target.closest ? e.target.closest('.fav-btn[data-fav-name]') : null;
+    if (favBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFav(favBtn.dataset.favName);
+        return;
+    }
+
+    var el = e.target.closest ? e.target.closest('[data-action]') : null;
+    if (!el) return;
+
+    var action = el.dataset.action;
+    switch (action) {
+        case 'home':
+            e.preventDefault();
+            switchTab('home');
+            window.scrollTo(0, 0);
+            break;
+        case 'tab':
+            e.preventDefault();
+            var opts = {};
+            if (el.dataset.filter) opts.filter = el.dataset.filter;
+            if (el.dataset.inseam) opts.inseam = parseInt(el.dataset.inseam, 10);
+            switchTab(el.dataset.tab, Object.keys(opts).length ? opts : undefined);
+            break;
+        case 'filter':
+            toggleFilter(el.dataset.filter);
+            break;
+        case 'inseam':
+            setInseam(parseInt(el.dataset.ins, 10));
+            break;
+        case 'clear':
+            clearFilters();
+            break;
+        case 'open-modal':
+            e.preventDefault();
+            openModal();
+            break;
+        case 'close-modal':
+            closeModal();
+            break;
+        case 'open-feedback':
+            e.preventDefault();
+            openFeedback();
+            break;
+        case 'close-feedback':
+            closeFeedback();
+            break;
+        case 'reload':
+            location.reload();
+            break;
+    }
+});
 
 // ── FILTERS ──────────────────────────────────────────────────────────────────
 function toggleFilter(key) {
@@ -603,7 +665,7 @@ function render() {
         const desc = generateDesc(s, isMen);
 
         const stats = [];
-        if (s.tallSpecific) stats.push({ text: '\u2605 Tall-Only', highlight: true });
+        if (s.tallSpecific) stats.push({ text: '★ Tall-Only', highlight: true });
         else stats.push({ text: 'Tall Section', highlight: false });
 
         if (s.hasTops && s.hasBottoms) stats.push({ text: 'Tops & Bottoms', highlight: false });
@@ -629,14 +691,14 @@ function render() {
         return '<div class="card-wrap">'
             + (hasUrl && safeHref ? '<a class="link-card' + featClass + '" href="' + safeHref + '" data-store="' + dataStore + '" data-store-slug="' + escapeHtml(storeSlug || '') + '" data-store-name="' + safeName + '" data-affiliate-network="' + escapeHtml(network) + '" target="_blank" rel="noopener noreferrer sponsored" aria-label="' + safeName + '">' : '<div class="link-card' + featClass + '">')
             + '<div>'
-            + '<div class="link-category">' + safeGenderLabel + ' \u00b7 ' + safeCatLabel + '</div>'
+            + '<div class="link-category">' + safeGenderLabel + ' · ' + safeCatLabel + '</div>'
             + '<div class="link-title">' + safeName + '</div>'
             + (desc ? '<div class="link-description">' + safeDesc + '</div>' : '')
             + '</div>'
             + (hasUrl && safeHref ? '<div class="link-action"><span>Visit Store</span>' + arrowSvg + '</div>' : '')
             + '<div class="stats-row">' + stats.map(st => '<span class="stat' + (st.highlight ? ' stat-highlight' : '') + '">' + escapeHtml(st.text) + '</span>').join('') + '</div>'
             + (hasUrl && safeHref ? '</a>' : '</div>')
-            + '<button class="fav-btn' + (isFaved ? ' active' : '') + '" data-fav-name="' + safeName + '" aria-label="' + (isFaved ? 'Remove from favorites' : 'Save to favorites') + '">' + (isFaved ? '\u2665' : '\u2661') + '</button>'
+            + '<button class="fav-btn' + (isFaved ? ' active' : '') + '" data-fav-name="' + safeName + '" aria-label="' + (isFaved ? 'Remove from favorites' : 'Save to favorites') + '">' + (isFaved ? '♥' : '♡') + '</button>'
             + '</div>';
     };
 
@@ -699,41 +761,13 @@ async function initApp() {
                 replaceFilterURL();
             });
         }
-        document.addEventListener('click', function (e) {
-            var favBtn = e.target.closest ? e.target.closest('.fav-btn[data-fav-name]') : null;
-            if (favBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFav(favBtn.dataset.favName, e);
-                return;
-            }
-            const a = e.target.closest('a[href]');
-            if (!a) return;
-            let host;
-            try { host = new URL(a.href, location.href).host; } catch (err) { return; }
-            if (!host || host === location.host) return;
-            const slug = a.dataset.storeSlug || null;
-            const name = a.dataset.storeName
-                || (a.dataset.store ? decodeURIComponent(a.dataset.store) : null);
-            const network = a.dataset.affiliateNetwork || 'none';
-            const source = (document.body && document.body.dataset.page) || tab || 'home';
-            trackEvent('outbound_click', {
-                store_slug: slug,
-                store_name: name,
-                source_page: source,
-                destination_domain: host,
-                affiliate_network: network
-            }, { beacon: true });
-            if (name) {
-                trackEvent('visit_store', { store_name: name, tab: source }, { beacon: true });
-            }
-        });
     } catch (error) {
-        document.getElementById('homepageContent').innerHTML = '<div class="wrap" style="padding-top:24px;padding-bottom:24px;"><p>We could not load the directory data.</p><p style="margin-top:8px;"><button class="pill pill-sm" onclick="location.reload()">Try again</button></p></div>';
+        document.getElementById('homepageContent').innerHTML = '<div class="wrap" style="padding-top:24px;padding-bottom:24px;"><p>We could not load the directory data.</p><p style="margin-top:8px;"><button class="pill pill-sm" data-action="reload">Try again</button></p></div>';
     }
 }
 
 if (_BROWSER) {
+    document.body.dataset.page = document.body.dataset.page || 'home';
     initApp();
 } else if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
