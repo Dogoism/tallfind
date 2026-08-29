@@ -12,18 +12,24 @@
 
     var CONSENT_KEY = 'tallfind_analytics_consent';
     var GA_ID = 'G-98C0R7CN01';
+    var ROOT_URL = window.location.protocol === 'file:' ? '../index.html' : '/';
+    var RESOURCES_URL = window.location.protocol === 'file:' ? '../resources/index.html' : '/resources/';
+
+    function pageUrl(page) {
+        return window.location.protocol === 'file:' ? '../' + page + '/index.html' : '/' + page + '/';
+    }
 
     var trackEvent = window.trackEvent || function () {};
 
     // ── Header / Footer markup ───────────────────────────────────────────────
     var headerHTML =
         '<header>'
-        + '<a class="logo" href="/" aria-label="Tallfind home">Tall<em>find</em></a>'
+        + '<a class="logo" href="' + ROOT_URL + '" aria-label="Tallfind home">Tall<em>find</em></a>'
         + '<nav class="header-nav" aria-label="Directory sections">'
-        +   '<a class="pill pill-sm" href="/">Home</a>'
-        +   '<a class="pill pill-sm" href="/?tab=men">Men\'s</a>'
-        +   '<a class="pill pill-sm" href="/?tab=women">Women\'s</a>'
-        +   '<a class="pill pill-sm" href="/resources/">Resources</a>'
+        +   '<a class="pill pill-sm" href="' + ROOT_URL + '">Home</a>'
+        +   '<a class="pill pill-sm" href="' + ROOT_URL + '?tab=men">Men\'s</a>'
+        +   '<a class="pill pill-sm" href="' + ROOT_URL + '?tab=women">Women\'s</a>'
+        +   '<a class="pill pill-sm" href="' + RESOURCES_URL + '">Resources</a>'
         + '</nav>'
         + '<div class="search-wrap">'
         +   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>'
@@ -31,8 +37,8 @@
         +   '<input type="text" id="searchShortcut" placeholder="Search by store, size, inseam..." readonly>'
         + '</div>'
         + '<div class="header-actions">'
-        +   '<a class="pill pill-ghost pill-sm" href="/?modal=submit">+<span class="btn-label"> Submit</span></a>'
-        +   '<a class="pill pill-ghost pill-sm" href="/?modal=feedback">✉<span class="btn-label"> Feedback</span></a>'
+        +   '<a class="pill pill-ghost pill-sm" href="' + ROOT_URL + '?modal=submit">+<span class="btn-label"> Submit</span></a>'
+        +   '<a class="pill pill-ghost pill-sm" href="' + ROOT_URL + '?modal=feedback">✉<span class="btn-label"> Feedback</span></a>'
         + '</div>'
         + '</header>';
 
@@ -47,24 +53,24 @@
             +     '<div class="hp-footer-col">'
             +       '<h5>Directory</h5>'
             +       '<ul>'
-            +         '<li><a href="/?tab=men">Men’s Tall</a></li>'
-            +         '<li><a href="/?tab=women">Women’s Tall</a></li>'
-            +         '<li><a href="/?tab=men&ft=tallSpecific">Tall-Only Brands</a></li>'
+            +         '<li><a href="' + ROOT_URL + '?tab=men">Men’s Tall</a></li>'
+            +         '<li><a href="' + ROOT_URL + '?tab=women">Women’s Tall</a></li>'
+            +         '<li><a href="' + ROOT_URL + '?tab=men&ft=tallSpecific">Tall-Only Brands</a></li>'
             +       '</ul>'
             +     '</div>'
             +     '<div class="hp-footer-col">'
             +       '<h5>Trust</h5>'
             +       '<ul>'
-            +         '<li><a href="/about/">About</a></li>'
-            +         '<li><a href="/how-we-review/">How We Review</a></li>'
-            +         '<li><a href="/resources/">Tall Resources</a></li>'
-            +         '<li><a href="/privacy/">Privacy</a></li>'
-            +         '<li><a href="/terms/">Terms</a></li>'
+            +         '<li><a href="' + pageUrl('about') + '">About</a></li>'
+            +         '<li><a href="' + pageUrl('how-we-review') + '">How We Review</a></li>'
+            +         '<li><a href="' + RESOURCES_URL + '">Tall Resources</a></li>'
+            +         '<li><a href="' + pageUrl('privacy') + '">Privacy</a></li>'
+            +         '<li><a href="' + pageUrl('terms') + '">Terms</a></li>'
             +       '</ul>'
             +     '</div>'
             +   '</div>'
             +   '<div class="hp-footer-bottom">'
-            +     '<span>© ' + new Date().getFullYear() + ' Tallfind · Some outbound links may be affiliate links. <a href="/how-we-review/#disclosure" style="color:rgba(255,253,246,0.6);text-decoration:underline">How this works</a>.</span>'
+            +     '<span>© ' + new Date().getFullYear() + ' Tallfind · Some outbound links may be affiliate links. <a href="' + pageUrl('how-we-review') + '#disclosure" style="color:rgba(255,253,246,0.6);text-decoration:underline">How this works</a>.</span>'
             +   '</div>'
             + '</div>'
             + '</footer>';

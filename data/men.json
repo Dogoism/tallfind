@@ -338,6 +338,19 @@
     "url": "https://www.jcpenney.com"
   },
   {
+    "name": "J.Hilburn",
+    "domain": "jhilburn.com",
+    "tallSpecific": false,
+    "hasTops": true,
+    "hasBottoms": true,
+    "topSizes": "Made to measure",
+    "inseam": null,
+    "inseamD": "Made to measure",
+    "waist": "Made to measure",
+    "notes": "Custom menswear including made-to-measure outerwear; requires a stylist and availability varies by location",
+    "url": "https://www.jhilburn.com"
+  },
+  {
     "name": "Johnnie-O",
     "domain": "johnnie-o.com",
     "tallSpecific": false,
@@ -351,8 +364,8 @@
     "url": "https://www.johnnie-o.com"
   },
   {
-    "name": "JohnnyBig",
-    "domain": "johnnybig.com",
+    "name": "Johnny Bigg",
+    "domain": "johnnybigg.com",
     "tallSpecific": false,
     "hasTops": true,
     "hasBottoms": true,
@@ -361,7 +374,7 @@
     "inseamD": "36\"",
     "waist": "36–48",
     "notes": "Primarily for Big AND Tall - fewer options for slimmer builds",
-    "url": "https://www.johnnybig.com"
+    "url": "https://www.johnnybigg.com"
   },
   {
     "name": "Kingsize",
