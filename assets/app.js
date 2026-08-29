@@ -370,7 +370,7 @@ function renderHomepage() {
     +         '<ul>'
     +           '<li><a href="/about/">About</a></li>'
     +           '<li><a href="/how-we-review/">How We Review</a></li>'
-    +           '<li><a href="/resources/">Tall Resources</a></li>'
+    +           '<li><a href="resources/index.html">Tall Resources</a></li>'
     +           '<li><a href="/privacy/">Privacy</a></li>'
     +           '<li><a href="/terms/">Terms</a></li>'
     +         '</ul>'
